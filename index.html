@@ -3,612 +3,317 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b1220">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>CoreCalc — Comprimento de Correia</title>
-
-<!-- Biblioteca de ícones: Lucide -->
+<meta name="theme-color" content="#f4f7f5">
+<title>CoreCalc — Correia</title>
 <script src="https://unpkg.com/lucide@latest"></script>
-
 <style>
 :root{
-  --bg:#f4f7f5;
-  --surface:#ffffff;
-  --surface-soft:#f8faf9;
-  --text:#17201b;
-  --muted:#718078;
-  --border:#dfe7e2;
-  --green:#16834a;
-  --green-dark:#0d6337;
-  --green-soft:#eaf7ef;
-  --green-soft-2:#f2faf5;
-  --shadow:0 12px 35px rgba(22,43,31,.08);
-  --radius:18px;
+  --bg:#f5f7f6;--card:#fff;--text:#18211c;--muted:#7a867f;
+  --line:#e1e7e3;--green:#16834a;--green-dark:#0d6337;
+  --green-soft:#edf8f1;--shadow:0 14px 40px rgba(20,45,31,.08);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  margin:0;
-  min-height:100vh;
-  background:
-    radial-gradient(circle at 90% -10%,rgba(22,131,74,.10),transparent 30%),
-    var(--bg);
-  color:var(--text);
+  margin:0;min-height:100vh;background:var(--bg);color:var(--text);
   font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
 button,input{font:inherit}
 button{cursor:pointer}
-.app{
-  width:min(1080px,100%);
-  margin:0 auto;
-  padding:24px;
-}
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:20px;
-  margin-bottom:22px;
-}
-.brand{
-  display:flex;
-  align-items:center;
-  gap:13px;
-}
+.app{width:min(680px,100%);margin:auto;padding:28px 20px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:11px}
 .logo{
-  width:45px;height:45px;border-radius:13px;
-  display:grid;place-items:center;
-  background:linear-gradient(145deg,var(--green),#0d6d3c);
-  color:white;
-  box-shadow:0 7px 18px rgba(22,131,74,.23);
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  color:#fff;background:linear-gradient(145deg,#1a9456,#0d6d3c);
+  box-shadow:0 7px 18px rgba(22,131,74,.2)
 }
-.logo svg{width:23px;height:23px}
-.brand h1{
-  margin:0;
-  font-size:20px;
-  letter-spacing:-.035em;
-}
-.brand p{
-  margin:3px 0 0;
-  color:var(--muted);
-  font-size:12px;
-}
+.logo svg{width:21px;height:21px}
+.brand h1{margin:0;font-size:19px;letter-spacing:-.04em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:11px}
 .status{
-  display:flex;align-items:center;gap:7px;
-  color:var(--green-dark);
-  font-size:11px;font-weight:700;
-  background:var(--green-soft);
-  padding:8px 11px;border-radius:999px;
-  white-space:nowrap;
+  display:flex;align-items:center;gap:6px;background:var(--green-soft);
+  color:var(--green-dark);border-radius:20px;padding:7px 9px;
+  font-size:9px;font-weight:800
 }
-.status-dot{
-  width:7px;height:7px;border-radius:50%;background:#22a85f;
-  box-shadow:0 0 0 3px rgba(34,168,95,.12);
-}
+.status i{width:6px;height:6px;border-radius:50%;background:#25aa62}
 .shell{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:22px;
-  box-shadow:var(--shadow);
-  overflow:hidden;
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow);overflow:hidden
 }
-.system-bar{
-  height:42px;
-  display:flex;align-items:center;
-  padding:0 17px;
-  gap:8px;
-  background:#101a14;
-  color:#a8c7b4;
-  font:11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+.bar{
+  height:38px;background:#111a14;color:#9bb8a5;
+  display:flex;align-items:center;gap:8px;padding:0 15px;
+  font:10px ui-monospace,SFMono-Regular,Menlo,monospace
 }
-.system-bar .lights{display:flex;gap:6px;margin-right:5px}
-.system-bar .light{width:8px;height:8px;border-radius:50%;background:#3c5748}
-.system-bar .light.active{background:#48dc82}
-.system-bar strong{color:#d5f8df;font-weight:700}
-.main{
-  padding:25px;
-}
-.command-head{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:20px;
-  margin-bottom:22px;
-}
-.command-title h2{
-  margin:0;
-  font-size:25px;
-  letter-spacing:-.045em;
-}
-.command-title p{
-  margin:7px 0 0;
-  color:var(--muted);
-  font-size:13px;
-}
-.command-id{
-  color:#839089;
-  font:10px ui-monospace,monospace;
-  padding-bottom:3px;
-}
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:20px;
-}
-.card-head{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:18px;
-}
-.card-title{
-  display:flex;align-items:center;gap:9px;
-  font-size:12px;font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:.07em;
-}
-.card-title .icon{
-  color:var(--green);
-  width:17px;height:17px;
-}
-.badge{
-  font:10px ui-monospace,monospace;
-  color:#708078;background:#f1f5f2;
-  padding:5px 7px;border-radius:6px;
-}
-.field{margin-bottom:14px}
-.field:last-of-type{margin-bottom:17px}
+.lights{display:flex;gap:5px;margin-right:4px}
+.light{width:7px;height:7px;border-radius:50%;background:#43584a}
+.light.active{background:#4ade80}
+.bar strong{color:#d5f5df}
+.content{padding:22px}
+.title{margin-bottom:18px}
+.title h2{margin:0;font-size:23px;letter-spacing:-.045em}
+.title p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.form{display:block}
+.field{margin-bottom:12px}
 label{
-  display:flex;justify-content:space-between;align-items:center;
-  margin:0 0 7px;
-  color:#4f5e55;
-  font-size:11px;font-weight:750;
-}
-.unit{
-  color:#99a59e;font-size:10px;font-weight:600;
+  display:block;margin-bottom:6px;color:#59665e;font-size:10px;
+  font-weight:750;text-transform:uppercase;letter-spacing:.03em
 }
 .input-wrap{position:relative}
 input{
-  width:100%;
-  height:50px;
-  border:1px solid #d6e0da;
-  border-radius:10px;
-  background:#fbfcfb;
-  color:#17251c;
-  padding:0 52px 0 14px;
-  font-size:16px;
-  font-weight:650;
-  outline:none;
-  transition:border-color .18s,box-shadow .18s,background .18s;
-  -webkit-appearance:none;
+  width:100%;height:48px;border:1px solid #d8e0db;border-radius:9px;
+  background:#fbfcfb;color:#17251c;padding:0 48px 0 13px;
+  outline:none;font-size:16px;font-weight:650;-webkit-appearance:none;
+  transition:.18s
 }
-input:focus{
-  background:white;
-  border-color:#4cb77a;
-  box-shadow:0 0 0 4px rgba(22,131,74,.08);
-}
+input:focus{border-color:#4cb77a;box-shadow:0 0 0 3px rgba(22,131,74,.08);background:#fff}
 .input-unit{
-  position:absolute;right:14px;top:16px;
-  color:#89968f;font:10px ui-monospace,monospace;
-  pointer-events:none;
+  position:absolute;right:13px;top:15px;color:#8a958f;
+  font:10px ui-monospace,monospace;pointer-events:none
 }
-.help{
-  display:flex;align-items:center;gap:6px;
-  color:#8a9790;font-size:10px;margin-top:7px;
-}
-.help svg{width:13px;height:13px}
 .primary{
-  width:100%;height:50px;border:0;border-radius:10px;
-  background:linear-gradient(135deg,var(--green),#0f7542);
-  color:white;font-size:13px;font-weight:800;
-  box-shadow:0 7px 16px rgba(22,131,74,.18);
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:transform .15s,box-shadow .15s;
+  width:100%;height:48px;margin-top:4px;border:0;border-radius:9px;
+  background:linear-gradient(135deg,var(--green),#0e7441);color:white;
+  font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px;
+  box-shadow:0 7px 16px rgba(22,131,74,.16)
 }
-.primary:hover{box-shadow:0 10px 22px rgba(22,131,74,.23);transform:translateY(-1px)}
-.primary:active{transform:translateY(0)}
-.primary svg{width:17px;height:17px}
-.empty{
-  min-height:276px;
-  border:1px dashed #d8e2dc;
-  border-radius:12px;
-  background:var(--surface-soft);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center;
-  color:#89968f;
+.primary svg{width:16px;height:16px}
+.note{text-align:center;color:#929c96;font-size:9px;margin-top:9px}
+.result{display:none}
+.result-card{
+  border:1px solid #c6e7d2;background:linear-gradient(145deg,#f6fcf8,#edf8f1);
+  border-radius:14px;padding:23px;text-align:center
 }
-.empty-icon{
-  width:43px;height:43px;border-radius:12px;
-  background:#edf5f0;color:#6d9a7c;
-  display:grid;place-items:center;margin-bottom:12px;
+.result-label{
+  color:#708177;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em
 }
-.empty-icon svg{width:21px;height:21px}
-.empty strong{font-size:12px;color:#627068}
-.empty span{font-size:11px;margin-top:5px;max-width:260px;line-height:1.5}
-.results{display:none}
-.hero{
-  border:1px solid #bfe5cd;
-  background:linear-gradient(145deg,#f5fcf7,#edf8f1);
-  border-radius:14px;
-  padding:21px;
-  position:relative;
-  overflow:hidden;
+.result-number{
+  margin:7px 0 2px;color:#125f36;font:800 clamp(45px,13vw,64px)/1 ui-monospace,monospace;
+  letter-spacing:-.07em
 }
-.hero:after{
-  content:"";
-  position:absolute;
-  width:170px;height:170px;
-  right:-75px;top:-90px;
-  border-radius:50%;
-  border:22px solid rgba(22,131,74,.055);
+.result-number small{font-size:.38em;color:#668a73;letter-spacing:0}
+.result-mm{color:#7d8d84;font:10px ui-monospace,monospace}
+.summary{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px
 }
-.hero-label{
-  color:#6b8073;font-size:10px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.09em;
+.summary-item{
+  border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px;text-align:left
 }
-.hero-value{
-  margin:6px 0 2px;
-  font-size:clamp(37px,6vw,54px);
-  line-height:1;
-  letter-spacing:-.055em;
-  font-weight:800;color:#125f36;
+.summary-item span{display:block;color:#8a958f;font-size:8px;text-transform:uppercase;font-weight:750}
+.summary-item strong{display:block;margin-top:4px;color:#35483b;font:700 12px ui-monospace,monospace}
+.back{
+  width:100%;height:42px;margin-top:10px;background:#fff;color:#53645a;
+  border:1px solid var(--line);border-radius:8px;font-size:10px;font-weight:750;
+  display:flex;align-items:center;justify-content:center;gap:6px
 }
-.hero-value small{font-size:.40em;color:#6a8a76;letter-spacing:0}
-.hero-sub{color:#7b8d83;font:10px ui-monospace,monospace}
-.metrics{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:9px;margin-top:10px;
-}
-.metric{
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:12px 13px;
-  background:white;
-}
-.metric-label{font-size:9px;color:#849189;text-transform:uppercase;font-weight:750}
-.metric-value{margin-top:4px;font:700 13px ui-monospace,monospace;color:#33483a}
+.back svg{width:14px;height:14px}
 .details{
-  width:100%;height:42px;margin-top:10px;
-  border:1px solid var(--border);border-radius:9px;
-  background:white;color:#52655a;
-  display:flex;align-items:center;justify-content:center;gap:7px;
-  font-size:11px;font-weight:750;
+  width:100%;height:38px;margin-top:8px;background:transparent;color:#718078;
+  border:0;font-size:9px;font-weight:700
 }
-.details:hover{background:#f8faf9}
-.details svg{width:15px;height:15px}
-.table-wrap{
-  display:none;margin-top:9px;
-  border:1px solid var(--border);
-  border-radius:10px;overflow:auto;
-  max-height:285px;
-}
-table{width:100%;min-width:560px;border-collapse:collapse;font:10px ui-monospace,monospace}
-th{
-  position:sticky;top:0;background:#f6f9f7;
-  color:#6f7f76;padding:10px;border-bottom:1px solid var(--border);
-  text-transform:uppercase;text-align:right;
-}
-td{padding:8px 10px;border-bottom:1px solid #edf1ee;color:#587064;text-align:right}
+.table-wrap{display:none;margin-top:8px;border:1px solid var(--line);border-radius:9px;overflow:auto;max-height:250px}
+table{width:100%;min-width:500px;border-collapse:collapse;font:9px ui-monospace,monospace}
+th{position:sticky;top:0;background:#f7f9f8;color:#78847d;padding:8px;text-align:right}
+td{padding:7px 8px;border-top:1px solid #edf1ee;color:#617269;text-align:right}
 th:first-child,td:first-child{text-align:center}
-tr:last-child td{border-bottom:0}
-.formula{
-  margin-top:14px;
-  padding:11px 12px;
-  border-radius:9px;
-  background:#f8faf9;
-  color:#748178;
-  font:10px ui-monospace,monospace;
-  line-height:1.5;
-}
 .footer{
-  display:flex;justify-content:space-between;align-items:flex-end;gap:18px;
-  margin-top:18px;color:#8b9690;
-  font:9px ui-monospace,monospace;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:12px;
+  margin-top:15px;color:#8b9690;font:8px ui-monospace,monospace
 }
-.footer > div:first-child{
-  display:flex;gap:15px;align-items:center;
-}
-.credit{
-  text-align:right;
-  color:#718078;
-  line-height:1.55;
-}
-.credit strong{
-  color:#52665a;
-  font-weight:750;
-}
-.credit-sub{
-  display:block;
-  color:#9aa59f;
-  font-size:8px;
-  margin-top:1px;
-}
-@media(max-width:760px){
-  body{padding:0;background:#f4f7f5}
-  .app{padding:0;width:100%}
-  .header{padding:17px 16px 14px;margin:0}
+.credit{text-align:right;line-height:1.5}
+.credit strong{color:#596960}
+.credit-sub{display:block;color:#a0a9a4;font-size:7px}
+.error{color:#b84b4b;text-align:center;font-size:9px;margin-top:8px}
+@media(max-width:560px){
+  .app{padding:15px 12px}
+  .header{margin-bottom:14px}
   .brand h1{font-size:18px}
-  .brand p{font-size:11px}
-  .status{font-size:9px;padding:7px 8px}
-  .shell{border-radius:0;border-left:0;border-right:0;box-shadow:none}
-  .main{padding:16px}
-  .system-bar{height:38px}
-  .command-head{margin-bottom:15px}
-  .command-title h2{font-size:21px}
-  .command-title p{font-size:12px}
-  .command-id{display:none}
-  .grid{grid-template-columns:1fr;gap:12px}
-  .card{padding:16px;border-radius:14px}
-  .empty{min-height:220px}
-  .footer{
-    padding-bottom:max(4px,env(safe-area-inset-bottom));
-    flex-direction:column;
-    align-items:stretch;
-    text-align:center;
-  }
-  .footer > div:first-child{
-    justify-content:center;
-    flex-wrap:wrap;
-  }
-  .credit{
-    text-align:center;
-  }
+  .brand p{font-size:10px}
+  .status{font-size:8px}
+  .content{padding:17px}
+  .title h2{font-size:21px}
+  .title p{font-size:11px}
+  .summary{grid-template-columns:1fr 1fr}
+  .footer{flex-direction:column;align-items:center;text-align:center}
+  .credit{text-align:center}
 }
-@media(max-width:420px){
-  .header{align-items:flex-start}
-  .status{margin-top:2px}
-  .brand{gap:10px}
-  .logo{width:40px;height:40px}
-  .metrics{grid-template-columns:1fr}
-  .hero{padding:18px}
-  input,.primary{height:52px}
+@media(max-width:380px){
+  .summary{grid-template-columns:1fr}
+  .status{display:none}
 }
 </style>
 </head>
-
 <body>
 <div class="app">
   <header class="header">
     <div class="brand">
       <div class="logo"><i data-lucide="cog"></i></div>
-      <div>
-        <h1>CoreCalc</h1>
-        <p>Calculadora industrial de correia enrolada</p>
-      </div>
+      <div><h1>CoreCalc</h1><p>Comprimento de correia enrolada</p></div>
     </div>
-    <div class="status"><span class="status-dot"></span>SISTEMA ONLINE</div>
+    <div class="status"><i></i> ONLINE</div>
   </header>
 
   <div class="shell">
-    <div class="system-bar">
+    <div class="bar">
       <div class="lights"><span class="light"></span><span class="light"></span><span class="light active"></span></div>
-      <strong>CORE_CALC</strong><span> / </span><span>correia-length.exe</span>
+      <strong>CORE_CALC</strong><span>/ correia-length.exe</span>
     </div>
 
-    <main class="main">
-      <div class="command-head">
-        <div class="command-title">
-          <h2>Comprimento da correia</h2>
-          <p>Informe os parâmetros do rolo para calcular o comprimento total.</p>
-        </div>
-        <div class="command-id">CMD-001 · LOCAL ENGINE</div>
+    <main class="content">
+      <div class="title">
+        <h2>Calcular comprimento</h2>
+        <p>Informe os dados do rolo.</p>
       </div>
 
-      <div class="grid">
-        <section class="card">
-          <div class="card-head">
-            <div class="card-title"><i class="icon" data-lucide="sliders-horizontal"></i> Parâmetros</div>
-            <span class="badge">INPUT</span>
+      <section class="form" id="form">
+        <div class="field">
+          <label for="externo">Diâmetro externo</label>
+          <div class="input-wrap">
+            <input id="externo" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="1128">
+            <span class="input-unit">mm</span>
           </div>
-
-          <div class="field">
-            <label for="externo">Diâmetro externo <span class="unit">MEDIDA</span></label>
-            <div class="input-wrap">
-              <input id="externo" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="1128" aria-label="Diâmetro externo">
-              <span class="input-unit">mm</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="interno">Diâmetro interno <span class="unit">MEDIDA</span></label>
-            <div class="input-wrap">
-              <input id="interno" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="272" aria-label="Diâmetro interno">
-              <span class="input-unit">mm</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="voltas">Número de voltas <span class="unit">QUANTIDADE</span></label>
-            <div class="input-wrap">
-              <input id="voltas" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="46" aria-label="Número de voltas">
-              <span class="input-unit">voltas</span>
-            </div>
-          </div>
-
-          <button class="primary" onclick="calcular()">
-            <i data-lucide="calculator"></i> CALCULAR COMPRIMENTO
-          </button>
-
-          <div class="help">
-            <i data-lucide="smartphone"></i>
-            No celular, o teclado numérico é ativado automaticamente.
-          </div>
-          <div class="help">
-            <i data-lucide="circle-help"></i>
-            Aceita valores com vírgula ou ponto decimal.
-          </div>
-        </section>
-
-        <section class="card">
-          <div class="card-head">
-            <div class="card-title"><i class="icon" data-lucide="scan-line"></i> Resultado</div>
-            <span class="badge">OUTPUT</span>
-          </div>
-
-          <div id="empty" class="empty">
-            <div class="empty-icon"><i data-lucide="ruler"></i></div>
-            <strong>Aguardando cálculo</strong>
-            <span>Preencha os parâmetros e execute o cálculo para visualizar o comprimento.</span>
-          </div>
-
-          <div id="results" class="results">
-            <div class="hero">
-              <div class="hero-label">Comprimento total calculado</div>
-              <div class="hero-value" id="metros">— <small>m</small></div>
-              <div class="hero-sub" id="milimetros">— mm</div>
-            </div>
-
-            <div class="metrics">
-              <div class="metric"><div class="metric-label">Espessura</div><div class="metric-value" id="espessura">—</div></div>
-              <div class="metric"><div class="metric-label">Redução / volta</div><div class="metric-value" id="reducao">—</div></div>
-              <div class="metric"><div class="metric-label">Diâmetro externo</div><div class="metric-value" id="outExt">—</div></div>
-              <div class="metric"><div class="metric-label">Diâmetro interno</div><div class="metric-value" id="outInt">—</div></div>
-            </div>
-
-            <button class="details" id="detailButton" onclick="toggleDetalhes()">
-              <i data-lucide="list"></i> VER DETALHAMENTO DAS VOLTAS
-            </button>
-
-            <div class="table-wrap" id="tableWrap">
-              <table>
-                <thead><tr><th>Volta</th><th>Diâmetro</th><th>Circunferência</th><th>Acumulado</th></tr></thead>
-                <tbody id="tbody"></tbody>
-              </table>
-            </div>
-
-            <div class="formula">
-              <strong>PROCESSAMENTO:</strong> cada volta é calculada como uma circunferência concêntrica entre o diâmetro externo e o interno.
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div class="footer">
-        <div>
-          <span>CORECALC · π = 3,14159265358979</span>
-          <span id="footerStatus">READY</span>
         </div>
+
+        <div class="field">
+          <label for="interno">Diâmetro interno</label>
+          <div class="input-wrap">
+            <input id="interno" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="272">
+            <span class="input-unit">mm</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="voltas">Número de voltas</label>
+          <div class="input-wrap">
+            <input id="voltas" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="46">
+            <span class="input-unit">voltas</span>
+          </div>
+        </div>
+
+        <button class="primary" onclick="calcular()"><i data-lucide="calculator"></i> CALCULAR</button>
+        <div id="error" class="error"></div>
+        <div class="note">Aceita vírgula ou ponto decimal.</div>
+      </section>
+
+      <section class="result" id="result">
+        <div class="result-card">
+          <div class="result-label">Comprimento total</div>
+          <div class="result-number" id="metros">— <small>m</small></div>
+          <div class="result-mm" id="milimetros">— mm</div>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item"><span>Espessura</span><strong id="espessura">—</strong></div>
+          <div class="summary-item"><span>Redução / volta</span><strong id="reducao">—</strong></div>
+          <div class="summary-item"><span>Diâmetro externo</span><strong id="outExt">—</strong></div>
+          <div class="summary-item"><span>Diâmetro interno</span><strong id="outInt">—</strong></div>
+        </div>
+
+        <button class="details" id="detailButton" onclick="toggleDetalhes()">VER DETALHAMENTO DAS VOLTAS</button>
+        <div class="table-wrap" id="tableWrap">
+          <table>
+            <thead><tr><th>Volta</th><th>Diâmetro</th><th>Circunferência</th><th>Acumulado</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <button class="back" onclick="novoCalculo()"><i data-lucide="arrow-left"></i> NOVO CÁLCULO</button>
+      </section>
+
+      <footer class="footer">
+        <span>CORECALC · π = 3,14159265358979</span>
         <div class="credit">
-          Desenvolvido por <strong>Eduardo Mineiro & Fabiano Santana</strong> para <strong>Centrobor</strong>
+          Desenvolvido por <strong>Eduardo Mineiro &amp; Fabiano Santana</strong> para <strong>Centrobor</strong>
           <span class="credit-sub">Centro Nacional de Distribuição de Borracha</span>
         </div>
-      </div>
+      </footer>
     </main>
   </div>
 </div>
 
 <script>
 lucide.createIcons();
-
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id);
 
 function parseNumber(value){
-  let s = String(value ?? '').trim().replace(/\s/g,'');
-  if(!s) return NaN;
-
-  // Aceita:
-  // 9,3043  | 9.3043
-  // 1.234,56 | 1,234.56
-  // 1234
-  if(s.includes(',') && s.includes('.')){
-    // O último separador é tratado como decimal.
-    const lastComma=s.lastIndexOf(',');
-    const lastDot=s.lastIndexOf('.');
-    const decimalPos=Math.max(lastComma,lastDot);
-    const intPart=s.slice(0,decimalPos).replace(/[.,]/g,'');
-    const decPart=s.slice(decimalPos+1).replace(/[.,]/g,'');
-    s=intPart+'.'+decPart;
-  }else if(s.includes(',')){
-    s=s.replace(',','.');
-  }
-
+  let s=String(value??'').trim().replace(/\s/g,'');
+  if(!s)return NaN;
+  if(s.includes(',')&&s.includes('.')){
+    const p=Math.max(s.lastIndexOf(','),s.lastIndexOf('.'));
+    s=s.slice(0,p).replace(/[.,]/g,'')+'.'+s.slice(p+1).replace(/[.,]/g,'');
+  }else if(s.includes(','))s=s.replace(',','.');
   return Number(s);
 }
-
 function fmt(n,d=3){
-  return n.toLocaleString('pt-BR',{
-    minimumFractionDigits:d,
-    maximumFractionDigits:d
-  });
+  return n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
 }
 
 function calcular(){
   const externo=parseNumber($('externo').value);
   const interno=parseNumber($('interno').value);
   const voltas=Number(String($('voltas').value).replace(/[^\d]/g,''));
+  const error=$('error');
 
   if(!Number.isFinite(externo)||!Number.isFinite(interno)||!Number.isInteger(voltas)||
      externo<=0||interno<=0||voltas<1||interno>=externo){
-    $('results').style.display='none';
-    $('empty').style.display='flex';
-    $('footerStatus').textContent='INPUT ERROR';
+    error.textContent='Verifique os valores informados.';
     return;
   }
+  error.textContent='';
 
   const espessura=(externo-interno)/(2*voltas);
   const reducao=2*espessura;
-  let total=0, rows='';
+  let total=0,rows='';
 
   for(let i=0;i<voltas;i++){
     const diametro=externo-(reducao*i);
     const circ=Math.PI*diametro;
     total+=circ;
-    rows += `<tr>
-      <td>${i+1}</td>
-      <td>${fmt(diametro)}</td>
-      <td>${fmt(circ)}</td>
-      <td>${fmt(total)}</td>
-    </tr>`;
+    rows+=`<tr><td>${i+1}</td><td>${fmt(diametro)}</td><td>${fmt(circ)}</td><td>${fmt(total)}</td></tr>`;
   }
 
+  $('metros').innerHTML=fmt(total/1000,2)+' <small>m</small>';
+  $('milimetros').textContent=fmt(total,2)+' mm';
   $('espessura').textContent=fmt(espessura,4)+' mm';
   $('reducao').textContent=fmt(reducao,4)+' mm';
   $('outExt').textContent=fmt(externo)+' mm';
   $('outInt').textContent=fmt(interno)+' mm';
-  $('metros').innerHTML=fmt(total/1000,2)+' <small>m</small>';
-  $('milimetros').textContent=fmt(total,2)+' mm';
   $('tbody').innerHTML=rows;
 
-  $('empty').style.display='none';
-  $('results').style.display='block';
+  $('form').style.display='none';
+  $('result').style.display='block';
   $('tableWrap').style.display='none';
-  $('detailButton').innerHTML='<i data-lucide="list"></i> VER DETALHAMENTO DAS VOLTAS';
-  $('footerStatus').textContent=voltas+' VOLTAS PROCESSADAS';
+  $('detailButton').textContent='VER DETALHAMENTO DAS VOLTAS';
   lucide.createIcons();
 
-  // Leva o resultado para a área visível no celular.
-  if(window.innerWidth <= 760){
-    setTimeout(()=>document.querySelector('#results').scrollIntoView({behavior:'smooth',block:'start'}),80);
-  }
+  if(innerWidth<=760)setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),50);
+}
+
+function novoCalculo(){
+  $('result').style.display='none';
+  $('form').style.display='block';
+  $('tableWrap').style.display='none';
+  $('error').textContent='';
+  if(innerWidth<=760)setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),30);
+  $('externo').focus();
 }
 
 function toggleDetalhes(){
   const open=$('tableWrap').style.display==='block';
   $('tableWrap').style.display=open?'none':'block';
-  $('detailButton').innerHTML=open
-    ? '<i data-lucide="list"></i> VER DETALHAMENTO DAS VOLTAS'
-    : '<i data-lucide="chevron-up"></i> OCULTAR DETALHAMENTO';
-  lucide.createIcons();
+  $('detailButton').textContent=open?'VER DETALHAMENTO DAS VOLTAS':'OCULTAR DETALHAMENTO';
 }
 
-document.querySelectorAll('input').forEach((el,index)=>{
-  el.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){
-      if(index < 2) document.querySelectorAll('input')[index+1].focus();
-      else calcular();
-    }
-  });
-});
-
-// Exemplo inicial da planilha.
-calcular();
+const inputs=[...document.querySelectorAll('input')];
+inputs.forEach((el,i)=>el.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(i<inputs.length-1)inputs[i+1].focus();
+    else calcular();
+  }
+}));
 </script>
 </body>
 </html>
