@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f4f7f5">
-<title>CoreCalc — Correia</title>
+<title>CoreCalc — Comprimento de Correia</title>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
 :root{
@@ -56,6 +56,15 @@ button{cursor:pointer}
 .title h2{margin:0;font-size:23px;letter-spacing:-.045em}
 .title p{margin:5px 0 0;color:var(--muted);font-size:12px}
 .form{display:block}
+.method-label{margin-bottom:7px;color:#59665e;font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.03em}
+.method-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.method-option{min-height:62px;display:flex;align-items:center;gap:10px;text-align:left;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#526158;transition:.18s}
+.method-option>svg{width:18px;height:18px;flex:none;color:#819087}
+.method-option span{display:block;min-width:0}
+.method-option strong{display:block;font-size:11px;color:#34463a}
+.method-option small{display:block;margin-top:3px;color:#8a958f;font-size:9px}
+.method-option.active{border-color:#64bd85;background:#f1faf4;box-shadow:0 0 0 2px rgba(22,131,74,.05)}
+.method-option.active>svg{color:var(--green)}
 .field{margin-bottom:12px}
 label{
   display:block;margin-bottom:6px;color:#59665e;font-size:10px;
@@ -136,6 +145,8 @@ th:first-child,td:first-child{text-align:center}
   .title h2{font-size:21px}
   .title p{font-size:11px}
   .summary{grid-template-columns:1fr 1fr}
+  .method-option{padding:9px;gap:7px}
+  .method-option strong{font-size:10px}
   .footer{flex-direction:column;align-items:center;text-align:center}
   .credit{text-align:center}
 }
@@ -164,10 +175,19 @@ th:first-child,td:first-child{text-align:center}
     <main class="content">
       <div class="title">
         <h2>Calcular comprimento</h2>
-        <p>Informe os dados do rolo.</p>
+        <p>Escolha o método e informe as medidas do rolo.</p>
       </div>
 
       <section class="form" id="form">
+        <div class="method-label">Método de cálculo</div>
+        <div class="method-options" role="group" aria-label="Método de cálculo">
+          <button type="button" class="method-option active" id="methodVoltas" onclick="selecionarMetodo('voltas')" aria-pressed="true">
+            <i data-lucide="repeat"></i><span><strong>Por voltas</strong><small>Sei a quantidade</small></span>
+          </button>
+          <button type="button" class="method-option" id="methodEspessura" onclick="selecionarMetodo('espessura')" aria-pressed="false">
+            <i data-lucide="ruler"></i><span><strong>Por espessura</strong><small>Sei a espessura</small></span>
+          </button>
+        </div>
         <div class="field">
           <label for="externo">Diâmetro externo</label>
           <div class="input-wrap">
@@ -184,16 +204,23 @@ th:first-child,td:first-child{text-align:center}
           </div>
         </div>
 
-        <div class="field">
+        <div class="field" id="voltasField">
           <label for="voltas">Número de voltas</label>
           <div class="input-wrap">
             <input id="voltas" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="46">
             <span class="input-unit">voltas</span>
           </div>
         </div>
+        <div class="field" id="espessuraField" style="display:none">
+          <label for="espessuraInput">Espessura da correia</label>
+          <div class="input-wrap">
+            <input id="espessuraInput" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="Ex.: 9,3">
+            <span class="input-unit">mm</span>
+          </div>
+        </div>
 
-        <button class="primary" onclick="calcular()"><i data-lucide="calculator"></i> CALCULAR</button>
-        <div id="error" class="error"></div>
+        <button class="primary" onclick="calcular()"><i data-lucide="calculator"></i> CALCULAR COMPRIMENTO</button>
+        <div id="error" class="error" role="alert"></div>
         <div class="note">Aceita vírgula ou ponto decimal.</div>
       </section>
 
@@ -205,6 +232,8 @@ th:first-child,td:first-child{text-align:center}
         </div>
 
         <div class="summary">
+          <div class="summary-item"><span>Método</span><strong id="outMetodo">—</strong></div>
+          <div class="summary-item"><span>Voltas estimadas</span><strong id="outVoltas">—</strong></div>
           <div class="summary-item"><span>Espessura</span><strong id="espessura">—</strong></div>
           <div class="summary-item"><span>Redução / volta</span><strong id="reducao">—</strong></div>
           <div class="summary-item"><span>Diâmetro externo</span><strong id="outExt">—</strong></div>
@@ -236,84 +265,45 @@ th:first-child,td:first-child{text-align:center}
 <script>
 lucide.createIcons();
 const $=id=>document.getElementById(id);
-
+let metodo='voltas';
+function selecionarMetodo(novo){
+  metodo=novo;const v=metodo==='voltas';
+  $('methodVoltas').classList.toggle('active',v);$('methodEspessura').classList.toggle('active',!v);
+  $('methodVoltas').setAttribute('aria-pressed',String(v));$('methodEspessura').setAttribute('aria-pressed',String(!v));
+  $('voltasField').style.display=v?'block':'none';$('espessuraField').style.display=v?'none':'block';$('error').textContent='';lucide.createIcons();
+}
 function parseNumber(value){
-  let s=String(value??'').trim().replace(/\s/g,'');
-  if(!s)return NaN;
-  if(s.includes(',')&&s.includes('.')){
-    const p=Math.max(s.lastIndexOf(','),s.lastIndexOf('.'));
-    s=s.slice(0,p).replace(/[.,]/g,'')+'.'+s.slice(p+1).replace(/[.,]/g,'');
-  }else if(s.includes(','))s=s.replace(',','.');
-  return Number(s);
+  let s=String(value??'').trim().replace(/\s/g,'');if(!s)return NaN;
+  if(s.includes(',')&&s.includes('.')){const p=Math.max(s.lastIndexOf(','),s.lastIndexOf('.'));s=s.slice(0,p).replace(/[.,]/g,'')+'.'+s.slice(p+1).replace(/[.,]/g,'');}
+  else if(s.includes(','))s=s.replace(',','.');return Number(s);
 }
-function fmt(n,d=3){
-  return n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
-}
-
+function fmt(n,d=3){return n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
 function calcular(){
-  const externo=parseNumber($('externo').value);
-  const interno=parseNumber($('interno').value);
-  const voltas=Number(String($('voltas').value).replace(/[^\d]/g,''));
-  const error=$('error');
-
-  if(!Number.isFinite(externo)||!Number.isFinite(interno)||!Number.isInteger(voltas)||
-     externo<=0||interno<=0||voltas<1||interno>=externo){
-    error.textContent='Verifique os valores informados.';
-    return;
+  const externo=parseNumber($('externo').value),interno=parseNumber($('interno').value);let voltas,espessura,reducao,total=0,rows='';
+  if(!Number.isFinite(externo)||!Number.isFinite(interno)||externo<=0||interno<=0||interno>=externo){$('error').textContent='Informe diâmetros válidos. O externo deve ser maior que o interno.';return;}
+  if(metodo==='voltas'){
+    voltas=Number(String($('voltas').value).trim());
+    if(!Number.isInteger(voltas)||voltas<1||voltas>100000){$('error').textContent='Informe um número inteiro de voltas maior que zero.';return;}
+    espessura=(externo-interno)/(2*voltas);reducao=2*espessura;
+    for(let i=0;i<voltas;i++){const d=externo-reducao*i,c=Math.PI*d;total+=c;rows+=`<tr><td>${i+1}</td><td>${fmt(d)}</td><td>${fmt(c)}</td><td>${fmt(total)}</td></tr>`;}
+  }else{
+    espessura=parseNumber($('espessuraInput').value);
+    if(!Number.isFinite(espessura)||espessura<=0){$('error').textContent='Informe uma espessura de correia válida.';return;}
+    reducao=2*espessura;voltas=(externo-interno)/reducao;
+    if(!Number.isFinite(voltas)||voltas<=0||voltas>100000){$('error').textContent='A espessura informada não permite calcular esse rolo.';return;}
+    const completas=Math.floor(voltas),fracao=voltas-completas;
+    for(let i=0;i<completas;i++){const d=externo-reducao*i,c=Math.PI*d;total+=c;rows+=`<tr><td>${i+1}</td><td>${fmt(d)}</td><td>${fmt(c)}</td><td>${fmt(total)}</td></tr>`;}
+    if(fracao>1e-10){const d=Math.max(interno,externo-reducao*completas),c=Math.PI*d*fracao;total+=c;rows+=`<tr><td>${completas+1} (${fmt(fracao*100,1)}%)</td><td>${fmt(d)}</td><td>${fmt(c)}</td><td>${fmt(total)}</td></tr>`;}
   }
-  error.textContent='';
-
-  const espessura=(externo-interno)/(2*voltas);
-  const reducao=2*espessura;
-  let total=0,rows='';
-
-  for(let i=0;i<voltas;i++){
-    const diametro=externo-(reducao*i);
-    const circ=Math.PI*diametro;
-    total+=circ;
-    rows+=`<tr><td>${i+1}</td><td>${fmt(diametro)}</td><td>${fmt(circ)}</td><td>${fmt(total)}</td></tr>`;
-  }
-
-  $('metros').innerHTML=fmt(total/1000,2)+' <small>m</small>';
-  $('milimetros').textContent=fmt(total,2)+' mm';
-  $('espessura').textContent=fmt(espessura,4)+' mm';
-  $('reducao').textContent=fmt(reducao,4)+' mm';
-  $('outExt').textContent=fmt(externo)+' mm';
-  $('outInt').textContent=fmt(interno)+' mm';
-  $('tbody').innerHTML=rows;
-
-  $('form').style.display='none';
-  $('result').style.display='block';
-  $('tableWrap').style.display='none';
-  $('detailButton').textContent='VER DETALHAMENTO DAS VOLTAS';
-  lucide.createIcons();
-
-  if(innerWidth<=760)setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),50);
+  $('error').textContent='';$('metros').innerHTML=fmt(total/1000,2)+' <small>m</small>';$('milimetros').textContent=fmt(total,2)+' mm';
+  $('espessura').textContent=fmt(espessura,4)+' mm';$('reducao').textContent=fmt(reducao,4)+' mm';$('outExt').textContent=fmt(externo)+' mm';$('outInt').textContent=fmt(interno)+' mm';
+  $('outMetodo').textContent=metodo==='voltas'?'Por voltas':'Por espessura';$('outVoltas').textContent=fmt(voltas,Number.isInteger(voltas)?0:2);$('tbody').innerHTML=rows;
+  $('form').style.display='none';$('result').style.display='block';$('tableWrap').style.display='none';$('detailButton').textContent='VER DETALHAMENTO DAS VOLTAS';lucide.createIcons();
+  if(innerWidth<=760)setTimeout(()=>$('result').scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
-
-function novoCalculo(){
-  $('result').style.display='none';
-  $('form').style.display='block';
-  $('tableWrap').style.display='none';
-  $('error').textContent='';
-  if(innerWidth<=760)setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),30);
-  $('externo').focus();
-}
-
-function toggleDetalhes(){
-  const open=$('tableWrap').style.display==='block';
-  $('tableWrap').style.display=open?'none':'block';
-  $('detailButton').textContent=open?'VER DETALHAMENTO DAS VOLTAS':'OCULTAR DETALHAMENTO';
-}
-
-const inputs=[...document.querySelectorAll('input')];
-inputs.forEach((el,i)=>el.addEventListener('keydown',e=>{
-  if(e.key==='Enter'){
-    e.preventDefault();
-    if(i<inputs.length-1)inputs[i+1].focus();
-    else calcular();
-  }
-}));
+function novoCalculo(){$('result').style.display='none';$('form').style.display='block';$('tableWrap').style.display='none';$('error').textContent='';if(innerWidth<=760)setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),30);}
+function toggleDetalhes(){const open=$('tableWrap').style.display==='block';$('tableWrap').style.display=open?'none':'block';$('detailButton').textContent=open?'VER DETALHAMENTO DAS VOLTAS':'OCULTAR DETALHAMENTO';}
+const inputs=[...document.querySelectorAll('input')];inputs.forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const visible=inputs.filter(x=>x.offsetParent!==null),i=visible.indexOf(el);if(i>=0&&i<visible.length-1)visible[i+1].focus();else calcular();}}));
 </script>
 </body>
 </html>
